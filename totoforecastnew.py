@@ -54,6 +54,15 @@ def getPastInformation(kuzi_num):
     # URL1指定
     url = "https://store.toto-dream.com/dcs/subos/screen/pi04/spin011/PGSPIN01101LnkHoldCntLotResultLsttoto.form?holdCntId=" + str(int(kuzi_num) - 1)
     http = urllib3.PoolManager()
+
+    try:
+        r = http.request('GET', url)
+        # ページ全体取得
+        soup = BeautifulSoup(r.data,'html.parser')
+    except:
+        print("ページをGETできませんでした。")
+        sys.exit(1)
+
     return ""
 
 
