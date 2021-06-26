@@ -49,7 +49,7 @@ def wdl(ha_w,ha_d,ha_l,ha,rd):
  
     return wdl_list[wdl_select[0]]
 
-# 過去の情報を取得して返却
+# WEBスクレイピング処理（公式HPから過去情報を取得）
 def getPastInformation(kuzi_num):
     # URL1指定
     url = "https://store.toto-dream.com/dcs/subos/screen/pi04/spin011/PGSPIN01101LnkHoldCntLotResultLsttoto.form?holdCntId=" + str(int(kuzi_num) - 1)
@@ -63,8 +63,22 @@ def getPastInformation(kuzi_num):
         print("ページをGETできませんでした。")
         sys.exit(1)
 
-    return ""
+    # テーブル情報取得
+    table_soup = soup.findAll("table",{"class":"kobetsu-format2 mb10"})[0]
+    # 行情報取得
+    table_tr = table_soup.findAll("tr")
 
+    rows = []
+    # 行数分繰り返し
+    for row in table_tr:
+        cols = []
+        # セル分繰り返し
+        for cell in row.findAll(['td','th']):
+            # カラム情報を１個ずつ追加していく
+           cols.append(cell.get_text().strip())
+        rows.append(cols)
+ 
+    return rows 
 
 
 # メイン処理 
@@ -73,7 +87,7 @@ def main():
     args = sys.argv
     if len(args) == 2:
         # WEBスクレイピング（過去の開催回情報を取得）
-        getPastInformation(args[1])
+        past_game_list = getPastInformation(args[1])
 
 
 
