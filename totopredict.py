@@ -74,7 +74,7 @@ import csv
 #     return wdl_list[0]
 
 # WEBスクレイピング処理（投票結果取得）
-def get_mach_info(kuzi_num,setu):
+def get_mach_info(kuzi_num,setu,setu2):
 
     # URL指定(TOTOサイト)
     url = "https://store.toto-dream.com/dcs/subos/screen/pi09/spin003/PGSPIN00301InitVoteRate.form?holdCntId=" + kuzi_num +"&commodityId=01" 
@@ -114,7 +114,7 @@ def get_mach_info(kuzi_num,setu):
             rows.append(cols)
 
 
-    # URL指定(jリーグサイト)
+    # URL指定(j1リーグサイト)
     url2 = "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2021&yearIdLabel=2021年&competitionId=492&competitionIdLabel=明治安田生命Ｊ１リーグ&competitionSectionId=" + setu +"&competitionSectionIdLabel=第" + setu + "節&search=search"
     http = urllib3.PoolManager()
 
@@ -142,8 +142,58 @@ def get_mach_info(kuzi_num,setu):
             cols2.append(cell2.get_text().strip())
         rows2.append(cols2)
     
+    # ランキング取得
+    for ritem in rows:
+        print(ritem[5])
+        print(ritem[6])
+        ritem[5] = ritem[5].replace('Ｃ大阪','セレッソ大阪')
+        ritem[5] = ritem[5].replace('横浜Ｍ','横浜Ｆ・マリノス')
+        ritem[5] = ritem[5].replace('Ｆ東京','ＦＣ東京')
+        ritem[5] = ritem[5].replace('Ｇ大阪','ガンバ大阪')
+        ritem[5] = ritem[5].replace('横浜Ｃ','横浜ＦＣ')
 
+        ritem[6] = ritem[6].replace('Ｃ大阪','セレッソ大阪')
+        ritem[6] = ritem[6].replace('横浜Ｍ','横浜Ｆ・マリノス')
+        ritem[6] = ritem[6].replace('Ｆ東京','ＦＣ東京')
+        ritem[6] = ritem[6].replace('Ｇ大阪','ガンバ大阪')
+        ritem[6] = ritem[6].replace('横浜Ｃ','横浜ＦＣ')
 
+        for ritem2 in rows2:
+            # ホームランキング
+            if ritem[5] in ritem2[2]:
+                ritem[3] = ritem2[1]
+            # アウェイランキング
+            if ritem[6] in ritem2[2]:
+                ritem[4] = ritem2[1]
+
+    # URL指定(j2リーグサイト)
+    url2 = "https://data.j-league.or.jp/SFRT01/?competitionSectionIdLabel=第" + setu2 + "節&competitionIdLabel=明治安田生命Ｊ２リーグ&yearIdLabel=2021年&yearId=2021&competitionId=493&competitionSectionId=40&search=search"
+    http = urllib3.PoolManager()
+
+    try:
+        r = http.request('GET', url2)
+        # ページ全体取得
+        soup = BeautifulSoup(r.data,'html.parser')
+    except:
+        print("ページをGETできませんでした。")
+        sys.exit(1)
+
+    # テーブル情報取得
+    table_soup2 = soup.findAll("table",{"class":"standings-table00"})[0]
+    # 行情報取得
+    table_tr2 = table_soup2.findAll("tr")
+
+    rows2 = []
+    # 行数分繰り返し
+    cnt=0
+    for row2 in table_tr2:
+        cols2 = []
+        # セル分繰り返し
+        for cell2 in row2.findAll(['td','th']):
+            # カラム情報を１個ずつ追加していく
+            cols2.append(cell2.get_text().strip())
+        rows2.append(cols2)
+    
     # ランキング取得
     for ritem in rows:
         print(ritem[5])
@@ -171,7 +221,8 @@ def get_mach_info(kuzi_num,setu):
             # アウェイランキング
             if ritem[6] in ritem2[2]:
                 ritem[4] = ritem2[1]
-
+  
+   
     print(rows)
     # rows2
 
@@ -196,7 +247,7 @@ def main():
     if len(args) == 4:
         # WEBスクレイピング
         # 分析情報を収集する
-        get_mach_info(args[1],args[2])
+        get_mach_info(args[1],args[2],args[3])
 
 
 
@@ -209,8 +260,8 @@ def main():
         # # away_mach_list.pop(0)
 
         # 学習
-        train = pd.read_csv('out3.csv')
-        train.head
+        # train = pd.read_csv('out3.csv')
+        # train.head
 
 
 
