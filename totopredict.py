@@ -110,16 +110,19 @@ def get_mach_info(kuzi_num,setu,setu2):
                 index = cols[num].find('（') +1
                 index2 = cols[num].find('）') -1
                 cols[num] = float(cols[num][index:index2])/100
+            
+            cols.append('')
+
 
             rows.append(cols)
 
 
     # URL指定(j1リーグサイト)
-    url2 = "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2021&yearIdLabel=2021年&competitionId=492&competitionIdLabel=明治安田生命Ｊ１リーグ&competitionSectionId=" + setu +"&competitionSectionIdLabel=第" + setu + "節&search=search"
+    url = "https://data.j-league.or.jp/SFRT01/?search=search&yearId=2021&yearIdLabel=2021年&competitionId=492&competitionIdLabel=明治安田生命Ｊ１リーグ&competitionSectionId=" + setu +"&competitionSectionIdLabel=第" + setu + "節&search=search"
     http = urllib3.PoolManager()
 
     try:
-        r = http.request('GET', url2)
+        r = http.request('GET', url)
         # ページ全体取得
         soup = BeautifulSoup(r.data,'html.parser')
     except:
@@ -127,14 +130,14 @@ def get_mach_info(kuzi_num,setu,setu2):
         sys.exit(1)
 
     # テーブル情報取得
-    table_soup2 = soup.findAll("table",{"class":"standings-table00"})[0]
+    table_soup = soup.findAll("table",{"class":"standings-table00"})[0]
     # 行情報取得
-    table_tr2 = table_soup2.findAll("tr")
+    table_tr = table_soup.findAll("tr")
 
     rows2 = []
     # 行数分繰り返し
     cnt=0
-    for row2 in table_tr2:
+    for row2 in table_tr:
         cols2 = []
         # セル分繰り返し
         for cell2 in row2.findAll(['td','th']):
@@ -144,8 +147,6 @@ def get_mach_info(kuzi_num,setu,setu2):
     
     # ランキング取得
     for ritem in rows:
-        print(ritem[5])
-        print(ritem[6])
         ritem[5] = ritem[5].replace('Ｃ大阪','セレッソ大阪')
         ritem[5] = ritem[5].replace('横浜Ｍ','横浜Ｆ・マリノス')
         ritem[5] = ritem[5].replace('Ｆ東京','ＦＣ東京')
@@ -167,11 +168,11 @@ def get_mach_info(kuzi_num,setu,setu2):
                 ritem[4] = ritem2[1]
 
     # URL指定(j2リーグサイト)
-    url2 = "https://data.j-league.or.jp/SFRT01/?competitionSectionIdLabel=第" + setu2 + "節&competitionIdLabel=明治安田生命Ｊ２リーグ&yearIdLabel=2021年&yearId=2021&competitionId=493&competitionSectionId=40&search=search"
+    url = "https://data.j-league.or.jp/SFRT01/?competitionSectionIdLabel=第" + setu2 + "節&competitionIdLabel=明治安田生命Ｊ２リーグ&yearIdLabel=2021年&yearId=2021&competitionId=493&competitionSectionId=40&search=search"
     http = urllib3.PoolManager()
 
     try:
-        r = http.request('GET', url2)
+        r = http.request('GET', url)
         # ページ全体取得
         soup = BeautifulSoup(r.data,'html.parser')
     except:
@@ -179,14 +180,14 @@ def get_mach_info(kuzi_num,setu,setu2):
         sys.exit(1)
 
     # テーブル情報取得
-    table_soup2 = soup.findAll("table",{"class":"standings-table00"})[0]
+    table_soup = soup.findAll("table",{"class":"standings-table00"})[0]
     # 行情報取得
-    table_tr2 = table_soup2.findAll("tr")
+    table_tr = table_soup.findAll("tr")
 
     rows2 = []
     # 行数分繰り返し
     cnt=0
-    for row2 in table_tr2:
+    for row2 in table_tr:
         cols2 = []
         # セル分繰り返し
         for cell2 in row2.findAll(['td','th']):
@@ -196,8 +197,6 @@ def get_mach_info(kuzi_num,setu,setu2):
     
     # ランキング取得
     for ritem in rows:
-        print(ritem[5])
-        print(ritem[6])
         ritem[5] = ritem[5].replace('Ｃ大阪','セレッソ大阪')
         ritem[5] = ritem[5].replace('横浜Ｍ','横浜Ｆ・マリノス')
         ritem[5] = ritem[5].replace('Ｆ東京','ＦＣ東京')
@@ -210,9 +209,6 @@ def get_mach_info(kuzi_num,setu,setu2):
         ritem[6] = ritem[6].replace('Ｇ大阪','ガンバ大阪')
         ritem[6] = ritem[6].replace('横浜Ｃ','横浜ＦＣ')
 
-        print(ritem[5])
-        print(ritem[6])
-
 
         for ritem2 in rows2:
             # ホームランキング
@@ -223,8 +219,46 @@ def get_mach_info(kuzi_num,setu,setu2):
                 ritem[4] = ritem2[1]
   
    
-    print(rows)
-    # rows2
+   
+    # URL指定(totoサイト結果)
+    url = "https://store.toto-dream.com/dcs/subos/screen/pi04/spin011/PGSPIN01101LnkHoldCntLotResultLsttoto.form?holdCntId=" + kuzi_num
+    http = urllib3.PoolManager()
+
+    try:
+        r = http.request('GET', url)
+        # ページ全体取得
+        soup = BeautifulSoup(r.data,'html.parser')
+    except:
+        print("ページをGETできませんでした。")
+        sys.exit(1)
+
+    # テーブル情報取得
+    table_soup = soup.findAll("table",{"class":"kobetsu-format2 mb10"})[0]
+    # 行情報取得
+    table_tr = table_soup.findAll("tr")
+
+    rows2 = []
+    # 行数分繰り返し
+    cnt=0
+    for row2 in table_tr:
+        cols2 = []
+        # セル分繰り返し
+        for cell2 in row2.findAll(['td','th']):
+            # カラム情報を１個ずつ追加していく
+            cols2.append(cell2.get_text().strip())
+        rows2.append(cols2)
+    
+
+    rows2.pop(0)
+    rows2.pop(0)
+    
+    cnt=0
+    for item in rows2:
+        goal = item[4].split('-')
+        rows[cnt][7] = goal[0]
+        rows[cnt][8] = goal[1]
+        cnt += 1
+
 
 
 
