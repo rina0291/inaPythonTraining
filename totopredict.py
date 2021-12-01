@@ -269,11 +269,6 @@ def get_mach_info(kuzi_num,setu,setu2):
     f.close()
 
 
-
-
-    return rows 
-
-
 # 0_メイン処理 
 def main():
     #引数の処理、lenが3(引数は一つ)であれば処理継続
@@ -282,6 +277,18 @@ def main():
         # WEBスクレイピング
         # 分析情報を収集する
         get_mach_info(args[1],args[2],args[3])
+
+        # CSV読み込み
+        df = pd.read_csv("out.csv",encoding='Shift_JIS')
+
+        print(df.head())
+
+
+
+
+        # x_train = df.drop(['homeper','drawper','awayper','homerank','aweyrank'],axis=1)
+        # y_train = df['homegoal'].values
+
 
 
 
