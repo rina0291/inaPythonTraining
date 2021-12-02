@@ -6,72 +6,7 @@ from bs4 import BeautifulSoup
 from tabulate import tabulate
 import pandas as pd
 import csv
- 
-# # WEBスクレイピング処理（公式HPから指定回の情報を取得） 
-# def get_toto(kuzi_num):
-#     # URL指定＋指定回
-#     url = "https://store.toto-dream.com/dcs/subos/screen/pi01/spin000/PGSPIN00001DisptotoLotInfo.form?holdCntId=" + kuzi_num
-#     http = urllib3.PoolManager()
- 
-#     try:
-#         r = http.request('GET', url)
-#         # ページ全体取得
-#         soup = BeautifulSoup(r.data,'html.parser')
-#     except:
-#         print("ページをGETできませんでした。")
-#         sys.exit(1)
- 
-#     # テーブル情報取得
-#     table_soup = soup.findAll("table",{"class":"kobetsu-format3"})[0]
-#     # 行情報取得
-#     table_tr = table_soup.findAll("tr")
- 
-#     rows = []
-#     # 行数分繰り返し
-#     for row in table_tr:
-#         cols = []
-#         # セル分繰り返し
-#         for cell in row.findAll(['td','th']):
-#             # カラム情報を１個ずつ追加していく
-#            cols.append(cell.get_text().strip())
-#         rows.append(cols)
- 
-
-
-#     return rows 
- 
-
-# #勝ち負けを判定する関数(Win Draw Loose)
-# def get_wdl(game_list,total_mach_list):
-     
-#     # wdl_homeaway = random.choices([0,1,2], weights=[ha_w,ha_d,ha_l])
-#     # wdl_random = random.choices([0,1,2])
-#     # wdl_select = random.choices([wdl_homeaway[0],wdl_random[0]], weights=[ha,rd])
-
-#     # 予想表示リスト
-#     wdl_list =['X - -','- X -','- - X']
-
-#     home_team = game_list.pop(4)
-#     away_team = game_list.pop(5)
-
-#     for row in total_mach_list:
-#         if home_team == row[2]:
-#             print(home_team)
-#             print(row[2])
-#             break
-
-
-
-
-
-#     # print("勝敗データ")
-#     # print(total_mach_list)
-
-
-
-
- 
-#     return wdl_list[0]
+from sklearn import tree
 
 # WEBスクレイピング処理（投票結果取得）
 def get_mach_info(kuzi_num,setu,setu2):
@@ -279,60 +214,40 @@ def main():
         get_mach_info(args[1],args[2],args[3])
 
         # CSV読み込み
-        df = pd.read_csv("out.csv",encoding='Shift_JIS')
+        train = pd.read_csv("out.csv",encoding='Shift_JIS')
+        test =  pd.read_csv("yosou.csv",encoding='Shift_JIS')
 
-        print(df.head())
+        #目的変数と説明変数を決定して取得
+        target  = train['aweygoal'].values #目的
+        # explain = train.drop(['homeper','drawper','awayper','homerank','aweyrank'],axis=1) #説明
+        explain = train[['homeper','drawper','awayper','homerank','aweyrank']].values
 
-
-
-
-        # x_train = df.drop(['homeper','drawper','awayper','homerank','aweyrank'],axis=1)
-        # y_train = df['homegoal'].values
-
-
-
-
-        # # 1：TOTAL勝敗
-        # total_mach_list = get_mach_info(args[2],"3")
-        # # 2：ホームでの勝敗
-        # home_mach_list = get_mach_info(args[2],"1")
-        # # 3：ホーム/アウェイでの勝敗
-        # away_mach_list = get_mach_info(args[2],"2")
-        # # away_mach_list.pop(0)
-
-        # 学習
-        # train = pd.read_csv('out3.csv')
-        # train.head
+        #決定木の作成
+        d_tree = tree.DecisionTreeClassifier()
+        #fit()で学習させる。第一引数に説明変数、第二引数に目的変数
+        d_tree = d_tree.fit(explain, target)
 
 
 
+        #testデータから説明変数を抽出
+        test_explain = test[['homeper','drawper','awayper','homerank','aweyrank']].values
+        #predict()メソッドで予測する
+        prediction = d_tree.predict(test_explain)
 
-        # # WEBスクレイピング（公式HPから指定回の対戦情報を取得）
-        # game_list = get_toto(args[1])
+        #出力結果を確認する
+        #予測データのサイズ
+        print(prediction.shape)
+        #予測データの中身
+        print(prediction)
+
+
+
+
     else:
         # 引数取得エラー（開催回の取得エラー）
         print("開催回を入れて下さい。")
         sys.exit(1)
  
-    # #テーブル処理:ヘッダ
-    # tbl_head = ["試合","開催日","時間","競技場","ホーム","VS","アウェイ","勝敗"]
-    # #テーブル処理:項目
-    # del game_list[0]
- 
-    # wdl_dict ={
-    #     'ha_w':4,
-    #     'ha_d':1,
-    #     'ha_l':2,
-    #     'ha':2,
-    #     'rd':1
-    # }
-
- 
-    # #勝敗を予測し列に追加 
-    # for i in range(len(game_list)):
-    #     game_list[i].append(get_wdl(game_list[i],total_mach_list))
-
-    # print(tabulate(game_list,tbl_head,tablefmt="grid"))
  
 if __name__ == '__main__':
     main()
