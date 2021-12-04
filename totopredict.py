@@ -182,8 +182,8 @@ def get_j3rank_info(rows,setu):
     
     # ランキング取得
     for ritem in rows:
-        # ritem[5] = ritem[5].replace('東京Ｖ','東京ヴェルディ')
-        # ritem[6] = ritem[6].replace('東京Ｖ','東京ヴェルディ')
+        ritem[5] = ritem[5].replace('Ｙ横浜','Ｙ．Ｓ．Ｃ．Ｃ．横浜')
+        ritem[6] = ritem[6].replace('Ｙ横浜','Ｙ．Ｓ．Ｃ．Ｃ．横浜')
 
         for ritem2 in rows2:
             # ホームランキング
@@ -245,7 +245,7 @@ def write_csv_data(rows,cnt,mode):
         f = open('out.csv', 'a', newline='')
     else:
         # 予想データ
-        f = open('yosou.csv', 'a', newline='')
+        f = open('yosou.csv', 'w', newline='')
 
     writer = csv.writer(f)
     # 初回以外はヘッダー削除
@@ -255,7 +255,14 @@ def write_csv_data(rows,cnt,mode):
             writer.writerow(['homeper', 'drawper', 'awayper', 'homerank', 'aweyrank', 'hometeam', 'aweyteam', 'homegoal', 'aweygoal'])
     else:
         # 予想データ
-        writer.writerow(['homeper', 'drawper', 'awayper', 'homerank', 'aweyrank', 'hometeam', 'aweyteam', 'homegoal', 'aweygoal'])
+        writer.writerow(['homeper', 'drawper', 'awayper', 'homerank', 'aweyrank', 'hometeam', 'aweyteam'])
+        for row in rows:
+            row.pop(9)
+            row.pop(8)
+            row.pop(7)
+            
+
+
 
     writer.writerows(rows)
     f.close()
@@ -284,12 +291,15 @@ def main():
 
             # WEBスクレイピング処理2（J1リーグサイトから指定節順位を取得）
             info_rows = get_j1rank_info(info_rows,str(j1setu+cnt))
+            print("J1；"+str(j1setu+cnt)+"節")
 
             # WEBスクレイピング処理3（J2リーグサイトから指定節順位を取得）
             info_rows = get_j2rank_info(info_rows,str(j2setu+cnt))
+            print("J2；"+str(j2setu+cnt)+"節")
 
             # WEBスクレイピング処理4（J3リーグサイトから指定節順位を取得）
             info_rows = get_j3rank_info(info_rows,str(j3setu+cnt))
+            print("J3；"+str(j3setu+cnt)+"節")
 
             # WEBスクレイピング処理5（TOTOサイトから試合結果ゴール数取得）
             info_rows = get_totogoal_info(info_rows,str(toto+cnt))
@@ -299,35 +309,46 @@ def main():
             cnt +=1
 
         # # 予想CSV作成
-        # print("予想CSV作成中")
-        # # WEBスクレイピング処理1（TOTOサイトから投票結果取得）
-        # info_rows = get_toto_info(args[1])
-        # # WEBスクレイピング処理2（J1リーグサイトから指定節順位を取得）
-        # info_rows = get_j1rank_info(info_rows,str(int(args[1])-1231))
-        # # WEBスクレイピング処理3（J2リーグサイトから指定節順位を取得）
-        # info_rows = get_j2rank_info(info_rows,str(int(args[1])-1227))
-        # # WEBスクレイピング処理4（J3リーグサイトから指定節順位を取得）
-        # info_rows = get_j3rank_info(info_rows,str(int(args[1])-1239))
+        print("【予想CSV作成中】")
+        sitei_toto = args[1]
+        sitei_j1 = str(int(sitei_toto) - 1232) 
+        sitei_j2 = str(int(sitei_toto) - 1228) 
+        sitei_j3 = str(int(sitei_toto) - 1240) 
 
+
+        # # WEBスクレイピング処理1（TOTOサイトから投票結果取得）
+        info_rows = get_toto_info(sitei_toto)
+        print("第"+sitei_toto+"回処理中")
+        # # WEBスクレイピング処理2（J1リーグサイトから指定節順位を取得）
+        info_rows = get_j1rank_info(info_rows,sitei_j1)
+        print("J1；"+sitei_j1+"節")
+        # # WEBスクレイピング処理3（J2リーグサイトから指定節順位を取得）
+        info_rows = get_j2rank_info(info_rows,sitei_j2)
+        print("J2；"+sitei_j2+"節")
+        # # WEBスクレイピング処理4（J3リーグサイトから指定節順位を取得）
+        info_rows = get_j3rank_info(info_rows,sitei_j3)
+        print("J3；"+sitei_j3+"節")
         # CSV出力
-        # write_csv_data(info_rows,0,"e")
+        write_csv_data(info_rows,0,"e")
 
         # CSV読み込み
         train = pd.read_csv("out.csv",encoding='Shift_JIS')
         test =  pd.read_csv("yosou.csv",encoding='Shift_JIS')
 
+        # 学習
+        print("【学習開始】")
         #目的変数と説明変数を決定して取得
+        # target  = train['homegoal'].values #目的
         target  = train['aweygoal'].values #目的
-        # explain = train.drop(['homeper','drawper','awayper','homerank','aweyrank'],axis=1) #説明
-        explain = train[['homeper','drawper','awayper','homerank','aweyrank']].values
+        explain = train[['homeper','drawper','awayper','homerank','aweyrank']].values #説明
 
         #決定木の作成
         d_tree = tree.DecisionTreeClassifier()
         #fit()で学習させる。第一引数に説明変数、第二引数に目的変数
         d_tree = d_tree.fit(explain, target)
 
-
-
+        # 予想
+        print("【予想開始】")
         #testデータから説明変数を抽出
         test_explain = test[['homeper','drawper','awayper','homerank','aweyrank']].values
         #predict()メソッドで予測する
@@ -335,7 +356,7 @@ def main():
 
         #出力結果を確認する
         #予測データのサイズ
-        print(prediction.shape)
+        # print(prediction.shape)
         #予測データの中身
         print(prediction)
     else:
