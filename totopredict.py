@@ -230,9 +230,13 @@ def get_totogoal_info(rows,totoId):
     
     cnt=0
     for item in rows2:
-        goal = item[4].split('-')
-        rows[cnt][7] = goal[0]
-        rows[cnt][8] = goal[1]
+        if item[4]=="中止":
+            rows[cnt][7] = 0
+            rows[cnt][8] = 0    
+        else:
+            goal = item[4].split('-')
+            rows[cnt][7] = goal[0]
+            rows[cnt][8] = goal[1]
         cnt += 1
 
     # 返却
@@ -257,12 +261,10 @@ def write_csv_data(rows,cnt,mode):
         # 予想データ
         writer.writerow(['homeper', 'drawper', 'awayper', 'homerank', 'aweyrank', 'hometeam', 'aweyteam'])
         for row in rows:
-            row.pop(9)
+            if len(row) == 10:
+                row.pop(9)
             row.pop(8)
             row.pop(7)
-            
-
-
 
     writer.writerows(rows)
     f.close()
@@ -285,6 +287,10 @@ def main():
 
         # スクレイピング処理纏め
         for i in range(int(args[2])):
+            if toto+cnt == 1250:
+                cnt +=1
+                continue         
+
             print("第"+str(toto+cnt)+"回処理中")
             # WEBスクレイピング処理1（TOTOサイトから投票結果取得）
             info_rows = get_toto_info(str(toto+cnt))
@@ -337,28 +343,36 @@ def main():
 
         # 学習
         print("【学習開始】")
-        #目的変数と説明変数を決定して取得
-        # target  = train['homegoal'].values #目的
-        target  = train['aweygoal'].values #目的
-        explain = train[['homeper','drawper','awayper','homerank','aweyrank']].values #説明
 
-        #決定木の作成
-        d_tree = tree.DecisionTreeClassifier()
-        #fit()で学習させる。第一引数に説明変数、第二引数に目的変数
-        d_tree = d_tree.fit(explain, target)
+        for i in range(2):
+            if i == 0:
+                #目的変数と説明変数を決定して取得
+                target  = train['homegoal'].values #目的
+            else:
+                target  = train['aweygoal'].values #目的
+                
+    
+            explain = train[['homeper','drawper','awayper','homerank','aweyrank']].values #説明
+            #決定木の作成
+            d_tree = tree.DecisionTreeClassifier()
+            #fit()で学習させる。第一引数に説明変数、第二引数に目的変数
+            d_tree = d_tree.fit(explain, target)
+            # 予想
+            if i == 0:
+                print("【ホーム予想】")
+            else:
+                print("【アウェイ予想】")
+            #testデータから説明変数を抽出
+            test_explain = test[['homeper','drawper','awayper','homerank','aweyrank']].values
+            #predict()メソッドで予測する
+            prediction = d_tree.predict(test_explain)
 
-        # 予想
-        print("【予想開始】")
-        #testデータから説明変数を抽出
-        test_explain = test[['homeper','drawper','awayper','homerank','aweyrank']].values
-        #predict()メソッドで予測する
-        prediction = d_tree.predict(test_explain)
+            #出力結果を確認する
+            #予測データの中身
+            print(prediction)
 
-        #出力結果を確認する
-        #予測データのサイズ
-        # print(prediction.shape)
-        #予測データの中身
-        print(prediction)
+
+
     else:
         # 引数取得エラー（開催回の取得エラー）
         print("引数の数が誤っています")
