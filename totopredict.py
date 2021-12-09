@@ -287,6 +287,7 @@ def main():
 
         # スクレイピング処理纏め
         for i in range(int(args[2])):
+            # 特定回はSKIP
             if toto+cnt == 1250:
                 cnt +=1
                 continue         
@@ -297,15 +298,15 @@ def main():
 
             # WEBスクレイピング処理2（J1リーグサイトから指定節順位を取得）
             info_rows = get_j1rank_info(info_rows,str(j1setu+cnt))
-            print("J1；"+str(j1setu+cnt)+"節")
+            print("J1："+str(j1setu+cnt)+"節")
 
             # WEBスクレイピング処理3（J2リーグサイトから指定節順位を取得）
             info_rows = get_j2rank_info(info_rows,str(j2setu+cnt))
-            print("J2；"+str(j2setu+cnt)+"節")
+            print("J2："+str(j2setu+cnt)+"節")
 
             # WEBスクレイピング処理4（J3リーグサイトから指定節順位を取得）
             info_rows = get_j3rank_info(info_rows,str(j3setu+cnt))
-            print("J3；"+str(j3setu+cnt)+"節")
+            print("J3："+str(j3setu+cnt)+"節")
 
             # WEBスクレイピング処理5（TOTOサイトから試合結果ゴール数取得）
             info_rows = get_totogoal_info(info_rows,str(toto+cnt))
@@ -343,6 +344,7 @@ def main():
 
         # 学習
         print("【学習開始】")
+        print("【第" + args[1] +"回予想結果】");
 
         for i in range(2):
             if i == 0:
@@ -359,9 +361,9 @@ def main():
             d_tree = d_tree.fit(explain, target)
             # 予想
             if i == 0:
-                print("【ホーム予想】")
+                print("【ホームチームゴール数予想】")
             else:
-                print("【アウェイ予想】")
+                print("【アウェイチームゴール数予想】")
             #testデータから説明変数を抽出
             test_explain = test[['homeper','drawper','awayper','homerank','aweyrank']].values
             #predict()メソッドで予測する

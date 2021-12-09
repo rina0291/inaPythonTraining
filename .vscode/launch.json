@@ -11,7 +11,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args" : [
-                "1269","1"
+                "1269","25"
             ]
         }
     ]
