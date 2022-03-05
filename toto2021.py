@@ -137,7 +137,7 @@ def write_csv_data(rows,cnt,mode):
 # WEBスクレイピング処理（TOTOサイトから過去の開催回取得）
 def get_past_toto():
     # URL指定(TOTOサイト)
-    url = "https://store.toto-dream.com/dcs/subos/screen/pi04/spin011/PGSPIN01101LnkSeasonLotResultLsttoto.form?meetingFiscalYear=2021" 
+    url = "https://store.toto-dream.com/dcs/subos/screen/pi04/spin011/PGSPIN01101LnkSeasonLotResultLsttoto.form?meetingFiscalYear=2022" 
     http = urllib3.PoolManager()
 
     try:
@@ -166,7 +166,7 @@ def main():
     # toto今年度全開催回数を取得する
     toto_no_info = get_past_toto()
     # ★特殊処理（次回TOTOがないため）
-    toto_no_info.pop(0)
+    # toto_no_info.pop(0)
 
     cnt=0
     print("【学習用CSV作成中】")
