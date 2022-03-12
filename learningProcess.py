@@ -19,9 +19,9 @@ def machine_learning():
         d_tree = d_tree.fit(explain, target)
         # 予想
         if i == 0:
-            print("【ホームチームゴール数予想】")
+            print("＊＊ホームチームゴール数予想＊＊")
         else:
-            print("【アウェイチームゴール数予想】")
+            print("＊＊アウェイチームゴール数予想＊＊")
         #testデータから説明変数を抽出
         test_explain = test[['homeper','drawper','awayper']].values
         #predict()メソッドで予測する
@@ -29,5 +29,29 @@ def machine_learning():
 
         #出力結果を確認する
         #予測データの中身
+        if i == 0:
+            homeGoalList = prediction
+        else:
+            awayGoalList = prediction
+
         print(prediction)
+
+    # 購入用整形
+    print("＊＊予想結果＊＊")
+    wdl_list =['- X -','X - -','- - X']
+    totoList = []
+    for j in range(13):
+        if homeGoalList[j] > awayGoalList[j]:
+            print(str(j+1) + "試合目：" + wdl_list[1] + "：購入マーク：1")
+            totoList.append(1)
+        elif homeGoalList[j] < awayGoalList[j]:
+            print(str(j+1) + "試合目：" + wdl_list[2] + "：購入マーク：2")
+            totoList.append(2)
+        else:
+            print(str(j+1) + "試合目：" + wdl_list[0] + "：購入マーク：0")
+            totoList.append(0)
+
+    print(totoList)
+
+        
 
